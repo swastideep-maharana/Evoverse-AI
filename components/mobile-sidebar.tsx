@@ -15,7 +15,7 @@ const MobileSidebar = () => {
   }, []);
 
   if (!isMounted) {
-    return null;
+    return null; // Prevents server-side rendering issues
   }
 
   return (
@@ -26,7 +26,7 @@ const MobileSidebar = () => {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0">
-        <Sidebar />
+        <Sidebar /> {/* Make sure Sidebar is structured correctly */}
       </SheetContent>
     </Sheet>
   );

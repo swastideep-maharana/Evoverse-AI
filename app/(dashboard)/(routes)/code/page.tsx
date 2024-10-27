@@ -1,13 +1,13 @@
-"use client"; // Add this line to make the component a Client Component
+"use client";
 
 import { useCallback, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { Loader2, Code } from "lucide-react";
 import { Heading } from "@/components/heading";
-import { formSchema } from "./constants"; // Ensure your formSchema is valid
+import { formSchema } from "./constants";
 import { FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,12 @@ type MessageType = {
   timestamp: string;
 };
 
-const ConversationPage = () => {
+const CodePage = () => {
   const router = useRouter();
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [typing, setTyping] = useState(false); // State for typing animation
-  const [loading, setLoading] = useState(false); // State for loading message
+  const [typing, setTyping] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const methods = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,7 +33,6 @@ const ConversationPage = () => {
   });
 
   const { register, handleSubmit, watch, formState, reset } = methods;
-
   const characterLimit = 200;
   const currentMessage = watch("prompt") || "";
   const remainingCharacters = characterLimit - currentMessage.length;
@@ -59,11 +58,11 @@ const ConversationPage = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setTyping(true); // Show typing animation
-    setLoading(true); // Show loading message
+    setTyping(true);
+    setLoading(true);
 
     try {
-      const response = await axios.post("/api/conversation", {
+      const response = await axios.post("/api/code", {
         messages: [...messages, userMessage],
       });
 
@@ -82,8 +81,8 @@ const ConversationPage = () => {
     } finally {
       reset();
       router.refresh();
-      setTyping(false); // Hide typing animation
-      setLoading(false); // Hide loading message
+      setTyping(false);
+      setLoading(false);
     }
   };
 
@@ -91,11 +90,11 @@ const ConversationPage = () => {
     <FormProvider {...methods}>
       <div>
         <Heading
-          title="Conversation"
-          description="Our most advanced conversation model."
-          icon={MessageSquare}
-          iconColor="text-violet-500"
-          bgColor="bg-violet-500/10"
+          title="Code Generation"
+          description="Generate code using descriptive text."
+          icon={Code}
+          iconColor="text-green-500"
+          bgColor="bg-green-600/10"
         />
         <div className="px-4 lg:px-8">
           <form
@@ -108,21 +107,24 @@ const ConversationPage = () => {
                   {...register("prompt", { maxLength: characterLimit })}
                   className="border-0 outline-none focus-visible:ring-0"
                   disabled={formState.isSubmitting}
-                  placeholder="Enter your question..."
+                  placeholder="Simple toggle button using react hooks."
                 />
               </FormControl>
               <p className={`text-sm mt-1 ${remainingCharacters < 20 ? "text-red-500" : "text-gray-500"}`}>
                 {remainingCharacters} characters remaining
               </p>
             </div>
-            <Button className="col-span-6 lg:col-span-1 w-full" disabled={formState.isSubmitting}>
+            <Button
+              className="col-span-6 lg:col-span-1 w-full"
+              disabled={formState.isSubmitting || remainingCharacters < 0}
+            >
               {formState.isSubmitting ? <Loader2 className="animate-spin" /> : "Generate"}
             </Button>
             <Button type="button" onClick={clearChat} className="col-span-6 lg:col-span-1 w-full">
               Clear Chat
             </Button>
           </form>
-          {typing && <div className="typing-animation" />}
+          {typing && <div className="typing-animation">...</div>} {/* Placeholder for typing animation */}
           {loading && (
             <div className="mt-2 text-gray-500 text-lg font-semibold">
               Thinking... 🤔
@@ -138,14 +140,16 @@ const ConversationPage = () => {
                   <div
                     className={`inline-block px-4 py-2 rounded-lg ${
                       msg.role === "user" 
-                        ? "bg-blue-200 text-blue-800" // Lighter user message style
-                        : "bg-green-200 text-green-800" // Lighter assistant message style
+                        ? "bg-blue-200 text-blue-800"
+                        : "bg-green-200 text-green-800"
                     }`}
                   >
                     <span className="font-semibold">
                       {msg.role.charAt(0).toUpperCase() + msg.role.slice(1)}:
                     </span>
-                    <span className="ml-2">{msg.content}</span>
+                    <span className="ml-2">
+                      <pre>{msg.content}</pre>
+                    </span>
                     <span className="text-xs text-gray-400 ml-1">{msg.timestamp}</span>
                   </div>
                 </div>
@@ -158,4 +162,4 @@ const ConversationPage = () => {
   );
 };
 
-export default ConversationPage;
+export default CodePage;
